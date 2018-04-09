@@ -1,6 +1,6 @@
-;(function(){
+(function(){
 
-if(!window.indexedDB){
+if(!window.indexedDB || !window.fetch){
     return false;
 }
 
@@ -32,7 +32,7 @@ function trimRandomUrl(url){
 }
 
 function load(url, notTry){
-    return new Promise(function(resolve){
+    return new Promise(function(resolve, reject){
         connection().then(function(objectStore){
             var request = objectStore.get(url);
 
@@ -49,22 +49,31 @@ function load(url, notTry){
                                         objectStore.add({url, text});
                                         resolve(text);
                                     });
+                                }, function(){
+                                  reject();
                                 })
                             }, 
 
                             function(){
                                 var tryUrl = trimRandomUrl(url);
-                                tryUrl != url && resolve(load(tryUrl, true));
+
+                                if(tryUrl != url){
+                                  resolve(load(tryUrl, true));
+                                }else{
+                                  reject();
+                                }
                             }
                         );  
                     }catch(e){}   
+                }else{
+                  reject();
                 }
             };
         });
     });
 };
 
-define.Module.load = function(url, callback){
+define.Module.createElement = function(url){
     var isCss = /\.(?:css|less)(?:\?|$)/.test(url), type = isCss ? 'style' : 'script';
     var element = document.createElement(type);
     
@@ -76,12 +85,20 @@ define.Module.load = function(url, callback){
         element.charset = define.Module.require.config('charset');
     }
 
+    return element;
+};
+
+define.Module.load = function(url, callback){
+    var element = define.Module.createElement(url);
+    
     load(url).then(function(text){
         var text = document.createTextNode(text);
         element.appendChild(text);
         document.getElementsByTagName('head')[0].appendChild(element);
         callback();
         element = null;
+    }, function(){
+        element.onerror && element.onerror.call(element);
     });
 }
 })();
