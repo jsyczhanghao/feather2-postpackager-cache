@@ -1,4 +1,9 @@
 ;(function(){
+
+if(!window.indexedDB){
+    return false;
+}
+
 var indexdb;
 
 function connection(){

@@ -17,8 +17,6 @@ module.exports = function(ret){
                 
                 if(file){
                     return 'url(' + file.getBase64() + ')';
-                }else{
-                    console.log(url, file, 1233);
                 }
 
                 return all;
