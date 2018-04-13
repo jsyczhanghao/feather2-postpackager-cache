@@ -46,7 +46,7 @@ function load(url, notTry){
                                 res.text().then(function(text){
                                     connection().then(function(objectStore){
                                         url = trimRandomUrl(url);
-                                        objectStore.add({url, text});
+                                        objectStore.put({url, text});
                                         resolve(text);
                                     });
                                 }, function(){
